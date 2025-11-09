@@ -4,7 +4,7 @@ import openai
 import requests
 
 # === CONFIG ===
-openai.api_key = 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
+openai.api_key = "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"
 ELEVENLABS_API_KEY = "sk_38722ef7138d73e230b272d05d9b29e2748fbe7455e1020a"
 ELEVEN_VOICE_ID = "ZF6FPAbjXT4488VcRRnw"
 BUSINESS_NAME = "Gemini Universal Services"
@@ -65,6 +65,7 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
