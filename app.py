@@ -30,10 +30,9 @@ def process_recording():
     transcript = request.form.get("TranscriptionText")
     if not transcript:
         transcript = "Caller did not say anything or transcription failed."
-    
+
     print("Caller said:", transcript)
 
-   
     try:
         ai_response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -44,12 +43,16 @@ def process_recording():
         )
         ai_text = ai_response.choices[0].message.content
     except Exception as e:
-        print("OpenAI error details:", e)
+        # Print the full error to Render logs
+        import traceback
+        print("OpenAI error traceback:")
+        traceback.print_exc()
         ai_text = "Sorry, there was a problem processing your request."
 
     resp = VoiceResponse()
     resp.say(ai_text)
     return Response(str(resp), mimetype="application/xml")
+
 
 
 @app.route("/response.mp3", methods=["GET"])
@@ -62,6 +65,7 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
