@@ -27,40 +27,29 @@ def voice():
 
 @app.route("/process_recording", methods=["POST"])
 def process_recording():
-    """Process caller's speech and reply"""
-    transcription = request.form.get("TranscriptionText", "")
-    print(f"Caller said: {transcription}")
+    transcript = request.form.get("TranscriptionText")
+    if not transcript:
+        transcript = "Caller did not say anything or transcription failed."
+    
+    print("Caller said:", transcript)
 
-    # Generate AI reply
-    prompt = f"You are a polite AI receptionist for {BUSINESS_NAME}. Respond helpfully to: {transcription}"
-    ai_response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    ai_text = ai_response.choices[0].message["content"]
-    print(f"AI response: {ai_text}")
+    # Use the new OpenAI 1.x syntax
+    try:
+        ai_response = openai.chat.completions.create(
+            model="gpt-4o-mini",  # or "gpt-3.5-turbo"
+            messages=[
+                {"role": "system", "content": f"You are a helpful receptionist for {BUSINESS_NAME}."},
+                {"role": "user", "content": transcript}
+            ]
+        )
+        ai_text = ai_response.choices[0].message.content
+    except Exception as e:
+        print("OpenAI error:", e)
+        ai_text = "Sorry, there was a problem processing your request."
 
-    # Convert AI text to speech (ElevenLabs)
-    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVEN_VOICE_ID}"
-    headers = {
-        "xi-api-key": ELEVENLABS_API_KEY,
-        "Content-Type": "application/json"
-    }
-    tts_data = {
-        "text": ai_text,
-        "voice_settings": {"stability": 0.6, "similarity_boost": 0.8}
-    }
-    tts_audio = requests.post(tts_url, json=tts_data, headers=headers).content
-
-    # Save audio file
-    with open("response.mp3", "wb") as f:
-        f.write(tts_audio)
-
-    # Return TwiML to play the audio
-    response = VoiceResponse()
-    response.play("https://YOUR_SERVER_URL/response.mp3")
-    response.say("Goodbye!")
-    return Response(str(response), mimetype="text/xml")
+    resp = VoiceResponse()
+    resp.say(ai_text)
+    return Response(str(resp), mimetype="application/xml")
 
 @app.route("/response.mp3", methods=["GET"])
 def serve_audio():
@@ -72,4 +61,5 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
