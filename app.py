@@ -35,17 +35,19 @@ def process_recording():
 
     # Use the new OpenAI 1.x syntax
     try:
-        ai_response = openai.chat.completions.create(
-            model="gpt-4o-mini",  # or "gpt-3.5-turbo"
-            messages=[
-                {"role": "system", "content": f"You are a helpful receptionist for {BUSINESS_NAME}."},
-                {"role": "user", "content": transcript}
-            ]
-        )
-        ai_text = ai_response.choices[0].message.content
-    except Exception as e:
-        print("OpenAI error:", e)
-        ai_text = "Sorry, there was a problem processing your request."
+        try:
+    ai_response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",  # <- use this
+        messages=[
+            {"role": "system", "content": f"You are a helpful receptionist for {BUSINESS_NAME}."},
+            {"role": "user", "content": transcript}
+        ]
+    )
+    ai_text = ai_response.choices[0].message.content
+except Exception as e:
+    print("OpenAI error details:", e)
+    ai_text = "Sorry, there was a problem processing your request."
+
 
     resp = VoiceResponse()
     resp.say(ai_text)
@@ -61,5 +63,6 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
 
 
