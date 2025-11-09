@@ -67,5 +67,9 @@ def serve_audio():
     """Serve audio file to Twilio"""
     return open("response.mp3", "rb").read(), 200, {"Content-Type": "audio/mpeg"}
 
+import os
+
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
